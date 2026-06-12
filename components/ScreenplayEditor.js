@@ -377,8 +377,8 @@ const ScreenplayEditor = forwardRef(function ScreenplayEditor(
         return;
       }
 
-      // Shift+? — transition
-      if (e.key === '?' && e.shiftKey) {
+      // Shift+> — transition
+      if (e.key === '>' && e.shiftKey) {
         e.preventDefault();
         updateElementType(ei, ai, li, 'transition');
         onActiveTypeChange('transition');
@@ -542,7 +542,7 @@ const ScreenplayEditor = forwardRef(function ScreenplayEditor(
         </div>
 
         <div className="keyboard-hint">
-          <kbd>Tab</kbd> cycle type &nbsp; <kbd>Shift</kbd>+<kbd>?</kbd> transition &nbsp; <kbd>Ctrl</kbd>+<kbd>Alt</kbd> continuous view &nbsp; <kbd>Ctrl</kbd>+<kbd>S</kbd> save
+          <kbd>Tab</kbd> cycle type &nbsp; <kbd>Shift</kbd>+<kbd>&gt;</kbd> transition &nbsp; <kbd>Ctrl</kbd>+<kbd>Alt</kbd> continuous view &nbsp; <kbd>Ctrl</kbd>+<kbd>S</kbd> save
         </div>
       </div>
     );
@@ -591,7 +591,7 @@ const ScreenplayEditor = forwardRef(function ScreenplayEditor(
       </div>
 
       <div className="keyboard-hint">
-        <kbd>Tab</kbd> cycle type &nbsp; <kbd>Shift</kbd>+<kbd>?</kbd> transition &nbsp; <kbd>Ctrl</kbd>+<kbd>Alt</kbd> page view &nbsp; <kbd>Ctrl</kbd>+<kbd>S</kbd> save
+        <kbd>Tab</kbd> cycle type &nbsp; <kbd>Shift</kbd>+<kbd>&gt;</kbd> transition &nbsp; <kbd>Ctrl</kbd>+<kbd>Alt</kbd> page view &nbsp; <kbd>Ctrl</kbd>+<kbd>S</kbd> save
       </div>
     </div>
   );
