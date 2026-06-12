@@ -325,6 +325,62 @@ export default function EditorPage() {
     }
   };
 
+  // ── Toggle Main Branch ──
+  const toggleMainBranch = async (episodeIdx) => {
+    const episode = structure[episodeIdx];
+    const newValue = episode.in_main_branch === false ? true : false;
+    const newStructure = [...structure];
+    newStructure[episodeIdx] = { ...episode, in_main_branch: newValue };
+    setStructure(newStructure);
+
+    if (episode.id) {
+      await supabase
+        .from('episodes')
+        .update({ in_main_branch: newValue })
+        .eq('id', episode.id);
+    }
+  };
+
+  // ── Reorder Episode (drag & drop) ──
+  const reorderEpisode = async (fromIdx, toIdx) => {
+    if (fromIdx === toIdx) return;
+    const newStructure = [...structure];
+    const [moved] = newStructure.splice(fromIdx, 1);
+    newStructure.splice(toIdx, 0, moved);
+    setStructure(newStructure);
+
+    // Persist new sort orders
+    for (let i = 0; i < newStructure.length; i++) {
+      if (newStructure[i].id) {
+        await supabase
+          .from('episodes')
+          .update({ sort_order: i })
+          .eq('id', newStructure[i].id);
+      }
+    }
+  };
+
+  // ── Reorder Act within an episode (drag & drop) ──
+  const reorderAct = async (episodeIdx, fromActIdx, toActIdx) => {
+    if (fromActIdx === toActIdx) return;
+    const newStructure = [...structure];
+    const acts = [...newStructure[episodeIdx].acts];
+    const [moved] = acts.splice(fromActIdx, 1);
+    acts.splice(toActIdx, 0, moved);
+    newStructure[episodeIdx] = { ...newStructure[episodeIdx], acts };
+    setStructure(newStructure);
+
+    // Persist new sort orders
+    for (let i = 0; i < acts.length; i++) {
+      if (acts[i].id) {
+        await supabase
+          .from('acts')
+          .update({ sort_order: i })
+          .eq('id', acts[i].id);
+      }
+    }
+  };
+
   // ── Keyboard shortcuts: Ctrl+S and ESC+1 ──
   useEffect(() => {
     let escPressed = false;
@@ -377,6 +433,9 @@ export default function EditorPage() {
         onRenameAct={renameAct}
         onDeleteEpisode={deleteEpisode}
         onDeleteAct={deleteAct}
+        onReorderEpisode={reorderEpisode}
+        onReorderAct={reorderAct}
+        onToggleMainBranch={toggleMainBranch}
       />
       <div className="editor-main">
         <Toolbar
@@ -401,7 +460,7 @@ export default function EditorPage() {
         <ExportPreview
           format={exportFormat}
           project={project}
-          structure={structure}
+          structure={structure.filter(ep => ep.in_main_branch !== false)}
           onClose={() => setExportFormat(null)}
         />
       )}

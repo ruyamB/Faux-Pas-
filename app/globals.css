@@ -589,6 +589,103 @@ input::placeholder {
   color: var(--danger) !important;
 }
 
+/* ── Drag & Drop Reorder ── */
+.sidebar-episode-group {
+  border-radius: var(--radius-sm);
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+  border: 1px solid transparent;
+  margin-bottom: 2px;
+}
+
+.sidebar-episode-group.drop-target {
+  border-color: var(--accent);
+  background: rgba(196, 163, 90, 0.08);
+}
+
+.sidebar-draggable {
+  cursor: grab;
+  user-select: none;
+}
+
+.sidebar-draggable:active {
+  cursor: grabbing;
+}
+
+.sidebar-draggable.dragging {
+  opacity: 0.35;
+}
+
+.sidebar-episode-group.dragging {
+  opacity: 0.35;
+}
+
+.sidebar-tree-item.drop-target {
+  border-color: var(--accent);
+  background: rgba(196, 163, 90, 0.12);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.sidebar-drag-handle {
+  font-size: 10px;
+  color: var(--text-muted);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+  margin-right: 4px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.sidebar-tree-item:hover .sidebar-drag-handle {
+  opacity: 0.6;
+}
+
+.sidebar-drag-handle:hover {
+  opacity: 1 !important;
+  color: var(--text-primary);
+}
+
+/* ── Main Branch Toggle ── */
+.sidebar-episode-group.unlinked {
+  opacity: 0.45;
+  border-left: 2px dashed var(--text-muted);
+  padding-left: 4px;
+}
+
+.sidebar-episode-group.unlinked:hover {
+  opacity: 0.7;
+}
+
+.sidebar-branch-btn {
+  font-size: 10px;
+  color: var(--text-muted);
+  opacity: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  padding: 0 4px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.sidebar-tree-item:hover .sidebar-branch-btn {
+  opacity: 1;
+}
+
+.sidebar-branch-btn.linked {
+  color: var(--accent);
+  opacity: 0.6;
+}
+
+.sidebar-tree-item:hover .sidebar-branch-btn.linked {
+  opacity: 1;
+}
+
+.sidebar-branch-btn:hover {
+  color: var(--accent) !important;
+  transform: scale(1.3);
+}
+
 /* ── Editor Main ── */
 .editor-main {
   flex: 1;

@@ -10,7 +10,7 @@ const TYPE_CYCLE = ['slugline', 'action', 'character', 'parenthetical', 'dialogu
 
 const TYPE_CONFIG = {
   slugline: { label: 'Scene Heading', placeholder: 'INT. LOCATION - DAY' },
-  action: { label: 'Action', placeholder: 'Description of what happens...' },
+  action: { label: 'Action', placeholder: '' },
   character: { label: 'Character', placeholder: 'CHARACTER NAME' },
   parenthetical: { label: 'Parenthetical', placeholder: '(direction)' },
   dialogue: { label: 'Dialogue', placeholder: 'Spoken words...' },

@@ -21,7 +21,8 @@ CREATE TABLE IF NOT EXISTS episodes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
-  sort_order INTEGER DEFAULT 0
+  sort_order INTEGER DEFAULT 0,
+  in_main_branch BOOLEAN DEFAULT true
 );
 
 -- Acts
@@ -195,3 +196,6 @@ CREATE POLICY "Users can delete elements"
 --   ADD COLUMN IF NOT EXISTS cover_contact TEXT DEFAULT '',
 --   ADD COLUMN IF NOT EXISTS cover_date TEXT DEFAULT '',
 --   ADD COLUMN IF NOT EXISTS cover_comments TEXT DEFAULT '';
+
+-- Main Branch migration (run if episodes table already exists):
+-- ALTER TABLE episodes ADD COLUMN IF NOT EXISTS in_main_branch BOOLEAN DEFAULT true;
