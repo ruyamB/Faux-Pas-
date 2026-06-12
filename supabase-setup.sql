@@ -249,3 +249,75 @@ CREATE OR REPLACE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
+
+-- ═══════════════════════════════════════════════
+-- PUBLIC WRITERS TABLE & AUTO-CONFIRM TRIGGERS
+-- ═══════════════════════════════════════════════
+CREATE TABLE IF NOT EXISTS public.writers (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  username TEXT NOT NULL,
+  email TEXT NOT NULL,
+  password_hash TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Enable RLS
+ALTER TABLE public.writers ENABLE ROW LEVEL SECURITY;
+
+-- Policies
+CREATE POLICY "Allow public read access to writers" 
+  ON public.writers FOR SELECT 
+  USING (true);
+
+CREATE POLICY "Allow individual insert to writers" 
+  ON public.writers FOR INSERT 
+  WITH CHECK (true);
+
+CREATE POLICY "Allow individual update to own writer profile" 
+  ON public.writers FOR UPDATE 
+  USING (auth.uid() = id);
+
+CREATE POLICY "Allow individual delete to own writer profile" 
+  ON public.writers FOR DELETE 
+  USING (auth.uid() = id);
+
+-- Trigger function to auto-confirm virtual @fauxpas.local email accounts
+CREATE OR REPLACE FUNCTION public.auto_confirm_fauxpas_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.email LIKE '%@fauxpas.local' THEN
+    NEW.email_confirmed_at = now();
+    NEW.confirmed_at = now();
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger definition for auto-confirming
+CREATE OR REPLACE TRIGGER on_auth_user_created_confirm
+  BEFORE INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.auto_confirm_fauxpas_user();
+
+-- Trigger function to sync auth.users to public.writers
+CREATE OR REPLACE FUNCTION public.handle_new_writer()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.writers (id, username, email, password_hash)
+  VALUES (
+    new.id,
+    coalesce(new.raw_user_meta_data ->> 'username', 'Writer'),
+    new.email,
+    ''
+  )
+  ON CONFLICT (id) DO NOTHING;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger definition for sync to writers table
+CREATE OR REPLACE TRIGGER on_auth_user_created_sync_writer
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_writer();
+
+
+
