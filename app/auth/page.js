@@ -59,6 +59,20 @@ export default function AuthPage() {
           },
         });
         if (signupError) throw signupError;
+
+        // Sync to profiles table as fallback / client-side handler
+        if (data?.user) {
+          try {
+            await supabase.from('profiles').insert({
+              id: data.user.id,
+              username: username,
+              email: email
+            });
+          } catch (profileErr) {
+            console.warn('Profile sync fallback insert skipped or already handled by db trigger:', profileErr);
+          }
+        }
+
         router.push('/dashboard');
       } else {
         const { data, error: loginError } = await supabase.auth.signInWithPassword({

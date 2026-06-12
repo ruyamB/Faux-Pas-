@@ -199,3 +199,53 @@ CREATE POLICY "Users can delete elements"
 
 -- Main Branch migration (run if episodes table already exists):
 -- ALTER TABLE episodes ADD COLUMN IF NOT EXISTS in_main_branch BOOLEAN DEFAULT true;
+
+-- ═══════════════════════════════════════════════
+-- PUBLIC PROFILES TABLE & SIGNUP TRIGGER
+-- ═══════════════════════════════════════════════
+CREATE TABLE IF NOT EXISTS public.profiles (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  username TEXT NOT NULL,
+  email TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Enable RLS
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+
+-- Policies
+CREATE POLICY "Allow public read access to profiles" 
+  ON public.profiles FOR SELECT 
+  USING (true);
+
+CREATE POLICY "Allow individual insert to own profile" 
+  ON public.profiles FOR INSERT
+  WITH CHECK (auth.uid() = id);
+
+CREATE POLICY "Allow individual update to own profile" 
+  ON public.profiles FOR UPDATE 
+  USING (auth.uid() = id);
+
+-- Trigger function to auto-create profile on signup
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.profiles (id, username, email)
+  VALUES (
+    new.id,
+    coalesce(new.raw_user_meta_data ->> 'username', 'writer'),
+    new.email
+  )
+  ON CONFLICT (id) DO UPDATE
+  SET 
+    username = EXCLUDED.username,
+    email = EXCLUDED.email;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger definition
+CREATE OR REPLACE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
